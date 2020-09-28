@@ -1,0 +1,13 @@
+Package: txtlib
+Type: Package
+Title: TBD
+Version: 1.0
+Date: 2020-08-22
+Author: TBD
+Maintainer: TBD <tbd@me.com>
+Description: TBD
+License: GPL (>= 2)
+Imports: Rcpp (>= 1.0.4)
+LinkingTo: Rcpp, RcppParallel, sparsepp, RcppArmadillo
+RoxygenNote: 7.1.1
+Encoding: UTF-8
