@@ -7,7 +7,8 @@ Author: TBD
 Maintainer: TBD <tbd@me.com>
 Description: TBD
 License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.4)
+Imports: Rcpp (>= 1.0.0), RcppParallel (>= 5.0.0)
 LinkingTo: Rcpp, RcppParallel, sparsepp, RcppArmadillo
+Suggests: testthat
 RoxygenNote: 7.1.1
 Encoding: UTF-8
