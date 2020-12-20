@@ -22,7 +22,3 @@ test_that("Numbers don't cause sentence splits", {
 
     testthat::expect_equal(splitted, c("It'll cost $5,000.00 dollars to repair. ", 'For real...'))
 })
-
-test_that("Failing test", {
-    testthat::fail()
-})
