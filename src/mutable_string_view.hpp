@@ -2,7 +2,6 @@
 #define _MUTABLE_STRING_VIEW_
 
 #include <string>
-#include <string_view>
 #include <iterator>
 #include <algorithm>
 #include <utility>
@@ -42,48 +41,20 @@ private:
 
 public:
 
-    base_mutable_string_view() :
-        base_start(nullptr),
-        base_end(nullptr),
-        _start(nullptr),
-        _end(nullptr)
-    {}
+    base_mutable_string_view() : base_start(nullptr), base_end(nullptr), _start(nullptr), _end(nullptr) {}
 
-
-    base_mutable_string_view(pointer data_in, size_type size_in) :
-        base_start(data_in),
-        base_end(data_in + size_in),
-        _start(data_in),
-        _end(data_in + size_in)
-    {
+    base_mutable_string_view(pointer data_in, size_type size_in) : base_start(data_in), base_end(data_in + size_in), _start(data_in), _end(data_in + size_in) {
         if(size_in > 0 and data_in == nullptr) throw std::runtime_error("Invalid data_in parameter (nullptr)");
     }
 
-    base_mutable_string_view(pointer _start_ptr, pointer _end_ptr) :
-        base_start(_start_ptr),
-        base_end(_end_ptr),
-        _start(_start_ptr),
-        _end(_end_ptr)
-    {
+    base_mutable_string_view(pointer _start_ptr, pointer _end_ptr) : base_start(_start_ptr), base_end(_end_ptr), _start(_start_ptr), _end(_end_ptr) {
         if(_start_ptr > _end_ptr) throw std::runtime_error("Invalid start and end pointer (start_ptr > end_ptr)");
     }
 
-
-    base_mutable_string_view(pointer _start_ptr) :
-        base_start(_start_ptr),
-        _start(_start_ptr)
-    {
+    base_mutable_string_view(pointer _start_ptr) : base_start(_start_ptr), _start(_start_ptr) {
         size_type len = Traits::length(_start_ptr);
         this->base_end = this->_start + len;
         this->_end = this->base_end;
-    }
-
-    base_mutable_string_view(std::basic_string<T> s) {
-        // This is an excellent way of causing a segfault if the view outlives string s, so...
-        this->base_start = &s[0];
-        this->base_end = &s[0] + s.length();
-        this->_start = &s[0];
-        this->_end = &s[0] + s.length();
     }
 
     base_mutable_string_view operator=(const_pointer new_value) {
@@ -151,10 +122,10 @@ public:
         this->_end -= n;
     }
 
-    void swap( base_mutable_string_view & other ) {
+    void swap(base_mutable_string_view &other) {
         using std::swap;
-        swap( _start, other._start );
-        swap( _end , other._end  );
+        swap(_start, other._start);
+        swap(_end , other._end);
     }
 
     base_mutable_string_view& erase(size_type index = 0, size_type count = npos) {
@@ -176,7 +147,7 @@ public:
         this->_end = this->_start;
     }
 
-    int compare(base_mutable_string_view _other) const noexcept {
+    int compare(const base_mutable_string_view &_other) const noexcept {
         size_type compare_length = std::min(this->size(), _other.size());
         int result = Traits::compare(data(), _other.data(), compare_length);
         if ( result == 0 ) // first compare_length chars matched
@@ -189,141 +160,119 @@ public:
     }
 
     // find
-    size_type find(base_mutable_string_view s, size_type pos = 0) const noexcept {
+    size_type find(const base_mutable_string_view &s, size_type pos = 0) const noexcept {
         _LIBCPP_ASSERT(s.size() == 0 || s.data() != nullptr, "mutable_string_view::find(): recieved nullptr");
-        return std::__str_find<value_type, size_type, traits_type, npos>
-            (data(), size(), s.data(), pos, s.size());
+        return std::__str_find<value_type, size_type, traits_type, npos>(data(), size(), s.data(), pos, s.size());
     }
 
     size_type find(T ch, size_type pos = 0) const noexcept {
-        return std::__str_find<value_type, size_type, traits_type, npos>
-        (data(), size(), ch, pos);
+        return std::__str_find<value_type, size_type, traits_type, npos>(data(), size(), ch, pos);
     }
 
     size_type find(const T* s, size_type pos, size_type count) const {
         _LIBCPP_ASSERT(count == 0 || s != nullptr, "mutable_string_view::find(): recieved nullptr");
-        return std::__str_find<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, count);
+        return std::__str_find<value_type, size_type, traits_type, npos>(data(), size(), s, pos, count);
     }
 
     size_type find(const T* s, size_type pos = 0) const {
         _LIBCPP_ASSERT(s != nullptr, "mutable_string_view::find(): recieved nullptr");
-        return std::__str_find<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, traits_type::length(s));
+        return std::__str_find<value_type, size_type, traits_type, npos>(data(), size(), s, pos, traits_type::length(s));
     }
 
     // rfind
-    size_type rfind(base_mutable_string_view s, size_type pos = npos) const noexcept {
+    size_type rfind(const base_mutable_string_view &s, size_type pos = npos) const noexcept {
         _LIBCPP_ASSERT(s.size() == 0 || s.data() != nullptr, "mutable_string_view::find(): recieved nullptr");
-        return std::__str_rfind<value_type, size_type, traits_type, npos>
-            (data(), size(), s.data(), pos, s.size());
+        return std::__str_rfind<value_type, size_type, traits_type, npos>(data(), size(), s.data(), pos, s.size());
     }
 
     size_type rfind(T ch, size_type pos = npos) const noexcept {
-        return std::__str_rfind<value_type, size_type, traits_type, npos>
-        (data(), size(), ch, pos);
+        return std::__str_rfind<value_type, size_type, traits_type, npos>(data(), size(), ch, pos);
     }
 
     size_type rfind(const T* s, size_type pos, size_type count) const {
         _LIBCPP_ASSERT(count == 0 || s != nullptr, "mutable_string_view::rfind(): recieved nullptr");
-        return std::__str_rfind<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, count);
+        return std::__str_rfind<value_type, size_type, traits_type, npos>(data(), size(), s, pos, count);
     }
 
     size_type rfind(const T* s, size_type pos=npos) const {
         _LIBCPP_ASSERT(s != nullptr, "mutable_string_view::rfind(): recieved nullptr");
-        return std::__str_rfind<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, traits_type::length(s));
+        return std::__str_rfind<value_type, size_type, traits_type, npos>(data(), size(), s, pos, traits_type::length(s));
     }
 
     // find_first_of
-    size_type find_first_of(base_mutable_string_view s, size_type pos = 0) const noexcept {
+    size_type find_first_of(const base_mutable_string_view &s, size_type pos = 0) const noexcept {
         _LIBCPP_ASSERT(s.size() == 0 || s.data() != nullptr, "mutable_string_view::find_first_of(): recieved nullptr");
-        return std::__str_find_first_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s.data(), pos, s.size());
+        return std::__str_find_first_of<value_type, size_type, traits_type, npos>(data(), size(), s.data(), pos, s.size());
     }
 
     size_type find_first_of(T ch, size_type pos = 0) const noexcept { return find(ch, pos); }
 
     size_type find_first_of(const T* s, size_type pos, size_type count) const {
         _LIBCPP_ASSERT(count == 0 || s != nullptr, "mutable_string_view::find_first_of(): recieved nullptr");
-        return std::__str_find_first_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, count);
+        return std::__str_find_first_of<value_type, size_type, traits_type, npos>(data(), size(), s, pos, count);
     }
 
     size_type find_first_of(const T* s, size_type pos=0) const {
         _LIBCPP_ASSERT(s != nullptr, "mutable_string_view::find_first_of(): recieved nullptr");
-        return std::__str_find_first_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, traits_type::length(s));
+        return std::__str_find_first_of<value_type, size_type, traits_type, npos>(data(), size(), s, pos, traits_type::length(s));
     }
 
     // find_last_of
-    size_type find_last_of(base_mutable_string_view s, size_type pos=npos) const noexcept {
+    size_type find_last_of(const base_mutable_string_view &s, size_type pos=npos) const noexcept {
         _LIBCPP_ASSERT(s.size() == 0 || s.data() != nullptr, "mutable_string_view::find_last_of(): recieved nullptr");
-        return std::__str_find_last_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s.data(), pos, s.size());
+        return std::__str_find_last_of<value_type, size_type, traits_type, npos>(data(), size(), s.data(), pos, s.size());
     }
 
     size_type find_last_of(T ch, size_type pos = npos) const noexcept { return rfind(ch, pos); }
 
     size_type find_last_of(const T* s, size_type pos, size_type count) const {
         _LIBCPP_ASSERT(count == 0 || s != nullptr, "mutable_string_view::find_last_of(): recieved nullptr");
-        return std::__str_find_last_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, count);
+        return std::__str_find_last_of<value_type, size_type, traits_type, npos>(data(), size(), s, pos, count);
     }
 
     size_type find_last_of(const T* s, size_type pos=npos) const {
         _LIBCPP_ASSERT(s != nullptr, "mutable_string_view::find_last_of(): recieved nullptr");
-        return std::__str_find_last_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, traits_type::length(s));
+        return std::__str_find_last_of<value_type, size_type, traits_type, npos>(data(), size(), s, pos, traits_type::length(s));
     }
 
     // find_first_not_of
-    size_type find_first_not_of(base_mutable_string_view s, size_type pos=0) const noexcept {
+    size_type find_first_not_of(const base_mutable_string_view &s, size_type pos=0) const noexcept {
         _LIBCPP_ASSERT(s.size() == 0 || s.data() != nullptr, "mutable_string_view::find_first_not_of(): recieved nullptr");
-        return std::__str_find_first_not_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s.data(), pos, s.size());
+        return std::__str_find_first_not_of<value_type, size_type, traits_type, npos>(data(), size(), s.data(), pos, s.size());
     }
 
     size_type find_first_not_of(T ch, size_type pos=0) const noexcept {
-        return std::__str_find_first_not_of<value_type, size_type, traits_type, npos>
-        (data(), size(), ch, pos);
+        return std::__str_find_first_not_of<value_type, size_type, traits_type, npos>(data(), size(), ch, pos);
     }
 
     size_type find_first_not_of(const T* s, size_type pos, size_type count) const {
         _LIBCPP_ASSERT(count == 0 || s != nullptr, "mutable_string_view::find_first_not_of(): recieved nullptr");
-        return std::__str_find_first_not_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, count);
+        return std::__str_find_first_not_of<value_type, size_type, traits_type, npos>(data(), size(), s, pos, count);
     }
 
     size_type find_first_not_of(const T* s, size_type pos=0) const {
         _LIBCPP_ASSERT(s != nullptr, "mutable_string_view::find_first_not_of(): recieved nullptr");
-        return std::__str_find_first_not_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, traits_type::length(s));
+        return std::__str_find_first_not_of<value_type, size_type, traits_type, npos>(data(), size(), s, pos, traits_type::length(s));
     }
 
     // find_last_not_of
-    size_type find_last_not_of(base_mutable_string_view s, size_type pos=npos) const noexcept {
+    size_type find_last_not_of(const base_mutable_string_view &s, size_type pos=npos) const noexcept {
         _LIBCPP_ASSERT(s.size() == 0 || s.data() != nullptr, "mutable_string_view::find_last_not_of(): recieved nullptr");
-        return std::__str_find_last_not_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s.data(), pos, s.size());
+        return std::__str_find_last_not_of<value_type, size_type, traits_type, npos>(data(), size(), s.data(), pos, s.size());
     }
 
     size_type find_last_not_of(T ch, size_type pos=npos) const noexcept {
-        return std::__str_find_last_not_of<value_type, size_type, traits_type, npos>
-        (data(), size(), ch, pos);
+        return std::__str_find_last_not_of<value_type, size_type, traits_type, npos>(data(), size(), ch, pos);
     }
 
     size_type find_last_not_of(const T* s, size_type pos, size_type count) const {
         _LIBCPP_ASSERT(count == 0 || s != nullptr, "mutable_string_view::find_last_not_of(): recieved nullptr");
-        return std::__str_find_last_not_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, count);
+        return std::__str_find_last_not_of<value_type, size_type, traits_type, npos>(data(), size(), s, pos, count);
     }
 
     size_type find_last_not_of(const T* s, size_type pos=npos) const {
         _LIBCPP_ASSERT(s != nullptr, "mutable_string_view::find_last_not_of(): recieved nullptr");
-        return std::__str_find_last_not_of<value_type, size_type, traits_type, npos>
-            (data(), size(), s, pos, traits_type::length(s));
+        return std::__str_find_last_not_of<value_type, size_type, traits_type, npos>(data(), size(), s, pos, traits_type::length(s));
     }
 
     static constexpr size_type npos = std::basic_string_view<T>::npos;
@@ -332,13 +281,13 @@ public:
 
 // operator ==
 template<class T, class Traits>
-bool operator==(base_mutable_string_view<T, Traits> __lhs, base_mutable_string_view<T, Traits> __rhs) noexcept {
+bool operator==(const base_mutable_string_view<T, Traits> &__lhs, const base_mutable_string_view<T, Traits> &__rhs) noexcept {
     if ( __lhs.size() != __rhs.size()) return false;
     return __lhs.compare(__rhs) == 0;
 }
 
 template<class T, class Traits>
-bool operator==(base_mutable_string_view<T, Traits> __lhs, typename std::common_type<base_mutable_string_view<T, Traits> >::type __rhs) noexcept {
+bool operator==(const base_mutable_string_view<T, Traits> &__lhs, typename std::common_type<base_mutable_string_view<T, Traits> >::type __rhs) noexcept {
     if ( __lhs.size() != __rhs.size()) return false;
     return __lhs.compare(__rhs) == 0;
 }
@@ -351,7 +300,7 @@ template<class T, class Traits> bool operator==(typename std::common_type<base_m
 
 // Stream IO
 template<class T, class Traits> std::basic_ostream<T, Traits>&
-operator<<(std::basic_ostream<T, Traits>& _stream, base_mutable_string_view<T, Traits> msv) {
+operator<<(std::basic_ostream<T, Traits>& _stream, const base_mutable_string_view<T, Traits> &msv) {
     return std::__put_character_sequence(_stream, msv.data(), msv.size());
 }
 
