@@ -1,11 +1,17 @@
-#include "sentence_vectorization.hpp"
+// #include "sentence_vectorization.hpp"
 
 #include <RcppParallel.h>
-#include <boost/algorithm/string.hpp>
+#include <string>
+#include <algorithm>
+#include <iterator>
+#include <map>
+
+#include "utf8.hpp"
+#include "mutable_string_view.hpp"
+#include "sentence_parser.hpp"
 
 using namespace std;
 using namespace txtlib;
-using namespace Rcpp;
 
 
 // [[Rcpp::export]]
