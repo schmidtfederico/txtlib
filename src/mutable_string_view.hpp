@@ -190,13 +190,15 @@ operator<<(std::basic_ostream<T, Traits>& _stream, const base_mutable_string_vie
 typedef base_mutable_string_view<char> mutable_string_view;
 typedef base_mutable_string_view<wchar_t> mutable_wstring_view;
 
+namespace std {
 
-template<class T, class Traits>
-struct std::hash<base_mutable_string_view<T, Traits>> : public unary_function<base_mutable_string_view<T, Traits>, size_t>
-{
-    size_t operator()(const base_mutable_string_view<T, Traits>& msv) const noexcept {
-        return __do_string_hash(msv.data(), msv.data() + msv.size());
+    template<class T, class Traits>
+    struct hash<base_mutable_string_view<T, Traits>> : public unary_function<base_mutable_string_view<T, Traits>, size_t>
+    {
+        size_t operator()(const base_mutable_string_view<T, Traits>& msv) const noexcept {
+            return __do_string_hash(msv.data(), msv.data() + msv.size());
+        };
     };
-};
 
+}
 #endif
