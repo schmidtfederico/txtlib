@@ -6,7 +6,6 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
-#include <string_view>
 #include <iostream>
 #include <array>
 #include "unicode.hpp"
@@ -25,21 +24,19 @@ namespace txtlib {
                 bool new_sentence = false;
                 unsigned long token_mask = 0;
 
-                IToken(StringType tok, int start, int end): token(tok), start_position(start), end_position(end) {};
+                IToken(StringType tok, int start, int end): token(tok), start_position(start), end_position(end), uid(0) {};
                 IToken(StringType tok, int start, int end, unsigned int id): token(tok), start_position(start), end_position(end), uid(id) {};
                 IToken() {};
         };
 
-    template <class StringType = std::wstring_view>
+    template <class StringType = std::wstring>
         class TokenExtractor {
 
             public:
-                StringType str;
+                const StringType str;
                 IToken<StringType> current_token;
 
-                TokenExtractor(StringType &_str) {
-                    this->str = _str;
-
+                TokenExtractor(const StringType &_str) : str(_str) {
                     // Read the first characters (if any).
                     this->init_read();
                 }
