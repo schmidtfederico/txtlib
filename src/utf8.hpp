@@ -4,6 +4,7 @@
 #include "mutable_string_view.hpp"
 #include <string>
 #include <codecvt>
+#include <locale>
 
 namespace txtlib {
 
