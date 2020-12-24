@@ -1,6 +1,5 @@
 CXX_STD = CXX11
-PKG_CXXFLAGS += -DRCPP_PARALLEL_USE_TBB=1 $(SHLIB_OPENMP_CXXFLAGS)
-LD_LIBRARY_PATH += /usr/lib
 
-PKG_LIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) # -lprofiler
-PKG_LIBS += $(shell ${R_HOME}/bin/Rscript -e "RcppParallel::RcppParallelLibs()")
+PKG_CXXFLAGS = -DRCPP_PARALLEL_USE_TBB=1 $(SHLIB_OPENMP_CXXFLAGS)
+
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(shell ${R_HOME}/bin/Rscript -e "RcppParallel::RcppParallelLibs()")

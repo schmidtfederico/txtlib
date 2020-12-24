@@ -8,7 +8,7 @@
 #include <iterator>
 #include <iostream>
 #include <array>
-#include "unicode.hpp"
+#include "unicode.h"
 
 // [[Rcpp::plugins(cpp11)]]
 

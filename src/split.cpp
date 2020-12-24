@@ -6,14 +6,17 @@
 #include <iterator>
 #include <map>
 
-#include "utf8.hpp"
-#include "mutable_string_view.hpp"
-#include "sentence_parser.hpp"
+#include "utf8.h"
+#include "mutable_string_view.h"
+#include "sentence_parser.h"
 
 using namespace std;
 using namespace txtlib;
 
-
+//' Splits a text into one or more sentences.
+//'
+//' @param text A text.
+//' @return An array of sentences.
 // [[Rcpp::export]]
 std::vector<std::wstring> split_sentences(const std::string &text) {
     std::vector<std::wstring> sentences;
@@ -41,7 +44,10 @@ std::vector<std::wstring> split_sentences(const std::string &text) {
     return sentences;
 }
 
-
+//' Splits a text into one or more words.
+//'
+//' @param text A text.
+//' @return An array of words.
 // [[Rcpp::export]]
 std::vector<std::vector<std::wstring>> split_words(const std::vector<std::string> &texts, const unsigned long word_mask = 2147483647, const unsigned long non_word_mask = 0, const bool lowercase = false) {
     std::vector<std::vector<std::wstring>> out_tokens(texts.size());

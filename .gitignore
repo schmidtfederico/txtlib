@@ -1,5 +1,8 @@
+..*
 packrat/lib*/
 .Rproj.user
 .Rprofile
 .Rhistory
 .DS_Store
+.Rbuildignore
+.dockerignore*
