@@ -5,8 +5,8 @@
 #'
 #' @param text A text.
 #' @return An array of sentences.
-split_sentences <- function(text) {
-    .Call(`_txtlib_split_sentences`, text)
+split_sentences <- function(texts) {
+    .Call(`_txtlib_split_sentences`, texts)
 }
 
 #' Splits a text into one or more words.
