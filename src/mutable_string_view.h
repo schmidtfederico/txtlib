@@ -90,9 +90,9 @@ public:
 
 
     // Element access.
-    reference operator[](size_type index) const { return this->at(index); }
+    reference operator[](const size_type& index) const { return this->at(index); }
 
-    reference at(size_type index) const {
+    reference at(const size_type& index) const {
         if(index >= this->size()) throw std::runtime_error("Invalid index");
         return this->_start[index];
     }
@@ -102,7 +102,7 @@ public:
     pointer data() const { return this->_start; }
 
     // Allow mutations.
-    reference operator()(size_type index) const { return at(index); }
+    reference operator()(const size_type& index) const { return at(index); }
 
     // Capacity.
     size_type size() const { return this->_end - this->_start; }

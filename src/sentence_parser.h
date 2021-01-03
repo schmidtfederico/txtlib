@@ -2,6 +2,7 @@
 #define _SENTENCE_PARSER_HPP_
 
 #define PARSER_DEBUG 0
+#define PARSER_PROFILE 0
 
 #include <string>
 #include <algorithm>
@@ -9,6 +10,12 @@
 #include <iostream>
 #include <array>
 #include "unicode.h"
+
+
+#if PARSER_PROFILE
+#include "gperftools/profiler.h"
+#include "iprof.hpp"
+#endif
 
 // [[Rcpp::plugins(cpp11)]]
 
@@ -30,13 +37,13 @@ namespace txtlib {
         };
 
     template <class StringType = std::wstring>
-        class TokenExtractor {
+        class UAX29Extractor {
 
             public:
                 const StringType str;
                 IToken<StringType> current_token;
 
-                TokenExtractor(const StringType &_str) : str(_str) {
+                UAX29Extractor(const StringType &_str) : str(_str) {
                     // Read the first characters (if any).
                     this->init_read();
                 }
@@ -46,7 +53,7 @@ namespace txtlib {
                     return this->get_token();
                 }
 
-            private:
+            protected:
                 IToken<StringType> previous_token;
                 IToken<StringType> next_token;
 
@@ -87,8 +94,12 @@ namespace txtlib {
             }
 
             void push_character_class(const UnicodeData* new_class) {
+#if PARSER_PROFILE
+                IPROF_FUNC;
+#endif
+
                 // This implements the Close* and Sp* part of SB8-SB11.
-                if(!(new_class->Close or new_class->Sp) or
+                if(!(new_class->Close or new_class->Sp or new_class->Extend or new_class->Format) or
                        (new_class->Sp and !this->SB_classes[0]->Sp) or
                        (new_class->Close and !this->SB_classes[0]->Close)) {
                     this->SB_classes[3] = this->SB_classes[2];
@@ -99,10 +110,17 @@ namespace txtlib {
             }
 
             void read_char() {
+#if PARSER_PROFILE
+                IPROF_FUNC;
+#endif
+
                 this->n_char_left--;
 
-                this->previous_previous_char = this->previous_char;
-                this->previous_char = this->current_char;
+                if(!(this->current_char->Extend or this->current_char->Format)) {
+                    // Only replace previous chars if the new current character is not (Extend|Format).
+                    this->previous_previous_char = this->previous_char;
+                    this->previous_char = this->current_char;
+                }
                 this->current_char = this->next_char;
                 this->next_char = this->next_next_char;
 
@@ -111,21 +129,12 @@ namespace txtlib {
 #if PARSER_DEBUG
                 std::cout << std::endl;
                 std::cout << this->current_position << std::flush;
-                std::wcout << L": " << this->str[this->current_position];
-                std::wcout << L" (" << this->current_char->General_Category << ")" << std::endl;
+                std::wcout << L": (code: " << (size_t) this->str[this->current_position] << L")" << std::endl;
+                debug_unicode_data(this->current_char->General_Category);
 #endif
 
                 if(this->n_char_left > 1) {
                     this->next_next_char = find_character(this->str[this->current_position + 2]);
-
-                    // We need to ignore Extend or Format classes.
-                    while((this->next_next_char->Extend or this->next_next_char->Format) and this->n_char_left > 1) {
-                        // Advance until we find another type of char or EOT.
-                        --this->n_char_left;
-                        ++this->current_position;
-
-                        this->next_next_char = find_character(this->str[this->current_position + 2]);
-                    }
                 } else {
                     this->next_next_char = txtlib::unknown_char;
                 }
@@ -134,34 +143,41 @@ namespace txtlib {
             }
 
             bool is_sentence_break() {
-                const UnicodeData* prev2 = this->previous_char;
-                const UnicodeData* prev = this->current_char;
+#if PARSER_PROFILE
+                IPROF_FUNC;
+#endif
+
                 const UnicodeData* next = this->next_char;
 
                 // Do not break within CRLF.
                 // SB3: CR × LF
                 const bool sb3 = !(
-                    prev->CR and
+                    this->current_char->CR and
                     next->LF
                 );
 
                 // Break after paragraph separators.
                 // SB4: ParaSep ÷
-                const bool sb4 = prev->ParaSep;
+                const bool sb4 = this->current_char->ParaSep;
 
-                // SB5. X (Extend | Format)* → X is implemented globally in read_char, we can ignore this rule.
+                if(sb4 and sb3) return true;
+
+                size_t current_pos = this->current_position;
+
+                // SB5. X (Extend | Format)* → X
+                if(next->Format or next->Extend) return false;
 
                 // Do not break after full stop in certain contexts. [SB6-SB8a]
                 // SB6. ATerm × Numeric
                 const bool sb6 = !(
-                    prev->ATerm and
+                    this->current_char->ATerm and
                     next->Numeric
                 );
 
                 // SB7. (Upper | Lower) ATerm × Upper
                 const bool sb7 = !(
-                    (prev2->Upper or prev2->Lower) and
-                    prev->ATerm and
+                    (this->previous_char->Upper or this->previous_char->Lower) and
+                    this->current_char->ATerm and
                     next->Upper
                 );
 
@@ -175,7 +191,7 @@ namespace txtlib {
 
                 if(ATerm_Close_Sp) {
                     // We need to perform a lookahead to verify this condition.
-                    size_t pos = this->current_position + 1;
+                    size_t pos = current_pos;
                     const UnicodeData* lookahead = next;
 
 #if PARSER_DEBUG
@@ -183,11 +199,11 @@ namespace txtlib {
 #endif
                     // (OLetter | Upper | Lower | ParaSep | SATerm)  ==  SB8_RHS1
                     while(pos < (this->input_length - 1) and !lookahead->SB8_RHS1) {
-                        pos++;
-                        lookahead = find_character(this->str[pos]);
 #if PARSER_DEBUG
                         std::cout << " " << this->str[pos];
 #endif
+                        pos++;
+                        lookahead = find_character(this->str[pos]);
                     }
 
 #if PARSER_DEBUG
@@ -240,7 +256,7 @@ namespace txtlib {
                     ((this->SB_classes[3]->SATerm and this->SB_classes[2]->Close and this->SB_classes[1]->Sp) or
                     (this->SB_classes[2]->SATerm and (this->SB_classes[1]->Close or this->SB_classes[1]->Sp)) or
                     this->SB_classes[1]->SATerm) and
-                    prev->ParaSep
+                    this->current_char->ParaSep
                 );
 
 #if PARSER_DEBUG
@@ -253,68 +269,91 @@ namespace txtlib {
             }
 
             bool is_word_break() {
-                const UnicodeData* prev2 = this->previous_char;
-                const UnicodeData* prev = this->current_char;
+#if PARSER_PROFILE
+                IPROF_FUNC;
+#endif
+
+                const UnicodeData* previous = this->previous_char;
+                const UnicodeData* current = this->current_char;
                 const UnicodeData* next = this->next_char;
                 const UnicodeData* next2 = this->next_next_char;
 
                 // WB3. Do not break within CRLF.
-                const bool wb3 = !(prev->CR and next->LF);
+                const bool wb3 = !(current->CR and next->LF);
 
                 // Otherwise break before and after Newlines (including CR and LF)
                 // WB3a. (Newline | CR | LF) ÷
-                const bool wb3a = (prev->Newline or prev->CR or prev->LF);
+                const bool wb3a = (current->Newline or current->CR or current->LF);
                 // WB3b. ÷ (Newline | CR | LF)
                 const bool wb3b = (next->Newline or next->CR or next->LF);
 
                 // Keep horizontal whitespace together.
                 // WB3d. WSegSpace × WSegSpace
                 const bool wb3d = !(
-                    prev->WSegSpace and
+                    current->WSegSpace and
                     next->WSegSpace
                 );
 
-                // WB4. X (Extend | Format)* → X is implemented globally in read_char, we can ignore this rule.
+                // WB4. X (Extend | Format)* → X
+                if(next->Extend or next->Format) {
+                    size_t current_pos = this->current_position;
+
+                    while ((next->Extend or next->Format) and current_pos < (this->input_length - 1)) {
+#if PARSER_DEBUG
+                        std::cout << "Next is Extend or Format at current_pos " << std::flush;
+                        std::cout << current_pos << std::flush;
+                        std::wcout << L": (" << (size_t) this->str[current_pos] << L")" << std::flush;
+#endif
+                        current_pos++;
+                        next = find_character(this->str[current_pos]);
+                    }
+
+                    if(current_pos < (this->input_length - 1)) {
+                        next2 = find_character(this->str[current_pos + 1]);
+                    } else {
+                        next2 = txtlib::unknown_char;;
+                    }
+                }
 
                 // Do not break between most letters.
                 // WB5. AHLetter × AHLetter
                 const bool wb5 = !(
-                    prev->AHLetter and
+                    current->AHLetter and
                     next->AHLetter
                 );
 
                 // Do not break letters across certain punctuation.
                 // WB6. AHLetter × (MidLetter | MidNumLetQ) AHLetter
                 const bool wb6 = !(
-                    prev->AHLetter and
+                    current->AHLetter and
                     (next->MidLetter or next->MidNumLetQ) and
                     next2->AHLetter
                 );
 
                 // WB7. AHLetter (MidLetter | MidNumLetQ) × AHLetter
                 const bool wb7 = !(
-                    prev2->AHLetter and
-                    (prev->MidLetter or prev->MidNumLetQ) and
+                    previous->AHLetter and
+                    (current->MidLetter or current->MidNumLetQ) and
                     next->AHLetter
                 );
 
                 // WB7a. Hebrew_Letter × Single_Quote
                 const bool wb7a = !(
-                    prev->Hebrew_Letter and
+                    current->Hebrew_Letter and
                     next->Single_Quote
                 );
 
                 // WB7b. Hebrew_Letter × Double_Quote Hebrew_Letter
                 const bool wb7b = !(
-                    prev->Hebrew_Letter and
+                    current->Hebrew_Letter and
                     next->Double_Quote and
                     next2->Hebrew_Letter
                 );
 
                 // WB7c. Hebrew_Letter Double_Quote × Hebrew_Letter
                 const bool wb7c = !(
-                    prev2->Hebrew_Letter and
-                    prev->Double_Quote and
+                    previous->Hebrew_Letter and
+                    current->Double_Quote and
                     next->Hebrew_Letter
                 );
 
@@ -322,51 +361,51 @@ namespace txtlib {
                 // WB8. Numeric × Numeric
                 // WB9. AHLetter × Numeric
                 const bool wb8_9 = !(
-                    (prev->Numeric or prev->AHLetter) and
+                    (current->Numeric or current->AHLetter) and
                     next->Numeric
                 );
 
                 // WB10. Numeric × AHLetter
                 const bool wb10 = !(
-                    prev->Numeric and
+                    current->Numeric and
                     next->AHLetter
                 );
 
                 // WB11. Numeric (MidNum | MidNumLetQ) × Numeric
                 const bool wb11 = !(
-                    prev2->Numeric and
-                    (prev->MidNum or prev->MidNumLetQ) and
+                    previous->Numeric and
+                    (current->MidNum or current->MidNumLetQ) and
                     next->Numeric
                 );
 
                 // WB12. Numeric × (MidNum | MidNumLetQ) Numeric
                 const bool wb12 = !(
-                    prev->Numeric and
+                    current->Numeric and
                     (next->MidNum or next->MidNumLetQ) and
                     next2->Numeric
                 );
 
                 // WB13. Katakana × Katakana
                 const bool wb13 = !(
-                    prev->Katakana and
+                    current->Katakana and
                     next->Katakana
                 );
 
                 // WB13a. (AHLetter | Numeric | Katakana | ExtendNumLet) × ExtendNumLet
                 const bool wb13a = !(
-                    (prev->AHLetter or prev->Numeric or prev->Katakana or prev->ExtendNumLet) and
+                    (current->AHLetter or current->Numeric or current->Katakana or current->ExtendNumLet) and
                     next->ExtendNumLet
                 );
 
                 // WB13b. ExtendNumLet × (AHLetter | Numeric | Katakana)
                 const bool wb13b = !(
-                    prev->ExtendNumLet and
+                    current->ExtendNumLet and
                     (next->AHLetter or next->Numeric or next->Katakana)
                 );
 
                 // WB13c. Regional_Indicator × Regional_Indicator
                 const bool wb13c = !(
-                    prev->Regional_Indicator and
+                    current->Regional_Indicator and
                     next->Regional_Indicator
                 );
 
@@ -379,6 +418,10 @@ namespace txtlib {
             }
 
             bool get_token() {
+#if PARSER_PROFILE
+                IPROF_FUNC;
+#endif
+
                 const size_t token_start_position = this->current_position;
                 const bool new_sentence = this->new_sentence_flag;
                 unsigned long token_mask = 0;
@@ -388,16 +431,20 @@ namespace txtlib {
                 while(this->n_char_left > 0) {
                     read_char();
 
-                    // std::cout << "Is word break? " << (is_word_break ? "yes" : "no") << ". Is sentence break? " << (is_sentence_break ? "yes" : "no") << std::endl;
-
                     token_mask = token_mask | this->current_char->General_Category;
                     this->new_sentence_flag = this->new_sentence_flag or this->is_sentence_break();
                     const bool is_word_break = this->is_word_break();
 
+#if PARSER_DEBUG
+                    std::cout << "Word break? " << (is_word_break ? "yes" : "no") << std::endl;
+#endif
+
                     if(is_word_break) {
                         size_t token_size = this->current_position - token_start_position;
+
                         StringType t(&this->str[token_start_position], token_size);
                         this->current_token = IToken<StringType>(t, token_start_position, this->current_position);
+
                         this->current_token.new_sentence = new_sentence;
                         this->current_token.token_mask = token_mask;
 
@@ -408,7 +455,6 @@ namespace txtlib {
                 return false;
             }
         };
-
 }
 
 #endif

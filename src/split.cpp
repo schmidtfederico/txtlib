@@ -13,35 +13,68 @@
 using namespace std;
 using namespace txtlib;
 
+
+#if PARSER_PROFILE
+#include "iprof.hpp"
+#include "gperftools/profiler.h"
+
+void start_profiling() {
+    ProfilerStart("parser.log");
+}
+
+void stop_profiling() {
+    ProfilerStop();
+}
+
+#endif
+
+// [[Rcpp::export(name = ".iprof_results")]]]
+void iprof_results() {
+#if PARSER_PROFILE
+    InternalProfiler::aggregateEntries();
+    std::cout << "\nWHAT: AVG_TIME (TOTAL_TIME / TIMES_EXECUTED)\nAll times in micro seconds\n" << InternalProfiler::stats << endl;
+#endif
+}
+
+
 //' Splits a text into one or more sentences.
 //'
 //' @param text A text.
 //' @return An array of sentences.
 // [[Rcpp::export]]
-std::vector<std::wstring> split_sentences(const std::string &text) {
-    std::vector<std::wstring> sentences;
+std::vector<std::vector<std::wstring>> split_sentences(const std::vector<std::string> &texts) {
+    std::vector<std::vector<std::wstring>> out_sentences(texts.size());
 
-    if(text.length() == 0) return sentences;
+    for(size_t i = 0; i < texts.size(); ++i) {
+        const std::string text = texts[i];
 
-    std::wstring wide_string = txtlib::utf8_to_ws(text);
+        if(text.length() == 0) continue;
 
-    mutable_wstring_view text_view(&wide_string[0], wide_string.length());
-    txtlib::TokenExtractor<mutable_wstring_view> parser(text_view);
+        std::vector<std::wstring> sentences;
 
-    mutable_wstring_view current_token;
+        std::wstring wide_string = txtlib::utf8_to_ws(text);
 
-    size_t sentence_start = 0;
+        mutable_wstring_view text_view(&wide_string[0], wide_string.length());
+        txtlib::UAX29Extractor<mutable_wstring_view> parser(text_view);
 
-    while(parser.has_tokens()) {
-        if(parser.current_token.new_sentence) {
-            sentences.push_back(wide_string.substr(sentence_start, parser.current_token.start_position - sentence_start));
-            sentence_start = parser.current_token.start_position;
+        mutable_wstring_view current_token;
+
+        size_t sentence_start = 0;
+
+        while(parser.has_tokens()) {
+            if(parser.current_token.new_sentence) {
+                sentences.push_back(wide_string.substr(sentence_start, parser.current_token.start_position - sentence_start));
+                sentence_start = parser.current_token.start_position;
+            }
         }
+
+        sentences.push_back(wide_string.substr(sentence_start));
+
+        out_sentences[i] = sentences;
     }
 
-    sentences.push_back(wide_string.substr(sentence_start));
 
-    return sentences;
+    return out_sentences;
 }
 
 //' Splits a text into one or more words.
@@ -50,6 +83,10 @@ std::vector<std::wstring> split_sentences(const std::string &text) {
 //' @return An array of words.
 // [[Rcpp::export]]
 std::vector<std::vector<std::wstring>> split_words(const std::vector<std::string> &texts, const unsigned long word_mask = 2147483647, const unsigned long non_word_mask = 0, const bool lowercase = false) {
+#if PARSER_PROFILE
+    IPROF_FUNC;
+#endif
+
     std::vector<std::vector<std::wstring>> out_tokens(texts.size());
 
     for(size_t i = 0; i < texts.size(); ++i) {
@@ -62,7 +99,7 @@ std::vector<std::vector<std::wstring>> split_words(const std::vector<std::string
         std::wstring wide_string = txtlib::utf8_to_ws(text);
 
         mutable_wstring_view text_view(&wide_string[0], wide_string.length());
-        txtlib::TokenExtractor<mutable_wstring_view> parser(text_view);
+        txtlib::UAX29Extractor<mutable_wstring_view> parser(text_view);
 
         while(parser.has_tokens()) {
             if(parser.current_token.token_mask & word_mask and !(parser.current_token.token_mask & non_word_mask)) {
@@ -72,7 +109,6 @@ std::vector<std::vector<std::wstring>> split_words(const std::vector<std::string
 
                 words.push_back(wide_string.substr(parser.current_token.start_position, parser.current_token.end_position - parser.current_token.start_position));
             }
-
         }
 
         out_tokens[i] = words;

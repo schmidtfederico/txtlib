@@ -7,13 +7,13 @@
 using namespace Rcpp;
 
 // split_sentences
-std::vector<std::wstring> split_sentences(const std::string& text);
-RcppExport SEXP _txtlib_split_sentences(SEXP textSEXP) {
+std::vector<std::vector<std::wstring>> split_sentences(const std::vector<std::string>& texts);
+RcppExport SEXP _txtlib_split_sentences(SEXP textsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type text(textSEXP);
-    rcpp_result_gen = Rcpp::wrap(split_sentences(text));
+    Rcpp::traits::input_parameter< const std::vector<std::string>& >::type texts(textsSEXP);
+    rcpp_result_gen = Rcpp::wrap(split_sentences(texts));
     return rcpp_result_gen;
 END_RCPP
 }

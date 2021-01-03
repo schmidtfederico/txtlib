@@ -2,81 +2,89 @@
 #ifndef _UNICODE_DATA_
 #define _UNICODE_DATA_
 
+#define UNICODE_DEBUG 0
+
+#include <iostream>
+
+#if UNICODE_DEBUG
+#include "iprof.hpp"
+#endif
+
 namespace txtlib {
 
-    enum GeneralCategory { 
-        Cc = 1UL, 
-        Zs = 2UL, 
-        Po = 4UL, 
-        Sc = 8UL, 
-        Ps = 16UL, 
-        Pe = 32UL, 
-        Sm = 64UL, 
-        Pd = 128UL, 
-        Nd = 256UL, 
-        Lu = 512UL, 
-        Sk = 1024UL, 
-        Pc = 2048UL, 
-        Ll = 4096UL, 
-        So = 8192UL, 
-        Lo = 16384UL, 
-        Pi = 32768UL, 
-        Cf = 65536UL, 
-        No = 131072UL, 
-        Pf = 262144UL, 
-        Lt = 524288UL, 
-        Lm = 1048576UL, 
-        Mn = 2097152UL, 
-        Me = 4194304UL, 
-        Mc = 8388608UL, 
-        Nl = 16777216UL, 
-        Zl = 33554432UL, 
-        Zp = 67108864UL, 
-        Cs = 134217728UL, 
-        Co = 268435456UL, 
+    enum GeneralCategory {
+        Cc = 1UL,
+        Zs = 2UL,
+        Po = 4UL,
+        Sc = 8UL,
+        Ps = 16UL,
+        Pe = 32UL,
+        Sm = 64UL,
+        Pd = 128UL,
+        Nd = 256UL,
+        Lu = 512UL,
+        Sk = 1024UL,
+        Pc = 2048UL,
+        Ll = 4096UL,
+        So = 8192UL,
+        Lo = 16384UL,
+        Pi = 32768UL,
+        Cf = 65536UL,
+        No = 131072UL,
+        Pf = 262144UL,
+        Lt = 524288UL,
+        Lm = 1048576UL,
+        Mn = 2097152UL,
+        Me = 4194304UL,
+        Mc = 8388608UL,
+        Nl = 16777216UL,
+        Zl = 33554432UL,
+        Zp = 67108864UL,
+        Cs = 134217728UL,
+        Co = 268435456UL,
         Unknown = 536870912UL
     };
 
     struct UnicodeData {
-        GeneralCategory General_Category;
-        bool White_Space;
-        bool Soft_Dotted;
-        bool Pattern_White_Space;
-        bool Pattern_Syntax;
-        bool Other_Uppercase;
-        bool Other_Lowercase;
-        bool ATerm;
-        bool CR;
-        bool Close;
-        bool Extend;
-        bool Format;
-        bool LF;
-        bool Lower;
-        bool Numeric;
-        bool OLetter;
-        bool SContinue;
-        bool STerm;
-        bool Sep;
-        bool Sp;
-        bool Upper;
-        bool ALetter;
-        bool Double_Quote;
-        bool ExtendNumLet;
-        bool Hebrew_Letter;
-        bool Katakana;
-        bool MidLetter;
-        bool MidNum;
-        bool MidNumLet;
-        bool Newline;
-        bool Regional_Indicator;
-        bool Single_Quote;
-        bool WSegSpace;
-        bool ZWJ;
-        bool ParaSep;
-        bool SATerm;
-        bool AHLetter;
-        bool MidNumLetQ;
-        bool SB8_RHS1;
+        const GeneralCategory General_Category;
+        const bool White_Space;
+        const bool Soft_Dotted;
+        const bool Pattern_White_Space;
+        const bool Pattern_Syntax;
+        const bool Other_Uppercase;
+        const bool Other_Lowercase;
+        const bool ATerm;
+        const bool CR;
+        const bool Close;
+        const bool Extend;
+        const bool Format;
+        const bool LF;
+        const bool Lower;
+        const bool Numeric;
+        const bool OLetter;
+        const bool SContinue;
+        const bool STerm;
+        const bool Sep;
+        const bool Sp;
+        const bool Upper;
+        const bool ALetter;
+        const bool Double_Quote;
+        const bool ExtendNumLet;
+        const bool Hebrew_Letter;
+        const bool Katakana;
+        const bool MidLetter;
+        const bool MidNum;
+        const bool MidNumLet;
+        const bool Newline;
+        const bool Regional_Indicator;
+        const bool Single_Quote;
+        const bool WSegSpace;
+        const bool ZWJ;
+        const bool ParaSep;
+        const bool SATerm;
+        const bool AHLetter;
+        const bool MidNumLetQ;
+        const bool SB8_RHS1;
     };
 
 
@@ -192,6 +200,9 @@ namespace txtlib {
     const static UnicodeData* unknown_char = &unique_character_groups[77];
 
     inline static const UnicodeData* find_character(const wchar_t &code) {
+#if UNICODE_DEBUG
+        IPROF_FUNC;
+#endif
         switch(code) {
             case 0 ... 8: return &unique_character_groups[0];
             case 9: return &unique_character_groups[1];
@@ -3611,6 +3622,9 @@ namespace txtlib {
     }
 
     inline void to_lowercase(wchar_t &code) {
+#if UNICODE_DEBUG
+        IPROF_FUNC;
+#endif
         // Make odd codes negative and keep even codes positive.
         switch(-code * (code % 2) + code * (code % 2 == 0)) {
             case -125217 ... -125185: code += 34; break;
@@ -3850,6 +3864,81 @@ namespace txtlib {
             case 93760 ... 93790: code += 32; break;
             case 125184 ... 125216: code += 34; break;
         }
+    }
+
+    inline void debug_unicode_data(const UnicodeData *unicode_data) {
+        switch(unicode_data->General_Category) {
+            case GeneralCategory::Cc: std::cout << "Cc" << std::endl; break;
+            case GeneralCategory::Zs: std::cout << "Zs" << std::endl; break;
+            case GeneralCategory::Po: std::cout << "Po" << std::endl; break;
+            case GeneralCategory::Sc: std::cout << "Sc" << std::endl; break;
+            case GeneralCategory::Ps: std::cout << "Ps" << std::endl; break;
+            case GeneralCategory::Pe: std::cout << "Pe" << std::endl; break;
+            case GeneralCategory::Sm: std::cout << "Sm" << std::endl; break;
+            case GeneralCategory::Pd: std::cout << "Pd" << std::endl; break;
+            case GeneralCategory::Nd: std::cout << "Nd" << std::endl; break;
+            case GeneralCategory::Lu: std::cout << "Lu" << std::endl; break;
+            case GeneralCategory::Sk: std::cout << "Sk" << std::endl; break;
+            case GeneralCategory::Pc: std::cout << "Pc" << std::endl; break;
+            case GeneralCategory::Ll: std::cout << "Ll" << std::endl; break;
+            case GeneralCategory::So: std::cout << "So" << std::endl; break;
+            case GeneralCategory::Lo: std::cout << "Lo" << std::endl; break;
+            case GeneralCategory::Pi: std::cout << "Pi" << std::endl; break;
+            case GeneralCategory::Cf: std::cout << "Cf" << std::endl; break;
+            case GeneralCategory::No: std::cout << "No" << std::endl; break;
+            case GeneralCategory::Pf: std::cout << "Pf" << std::endl; break;
+            case GeneralCategory::Lt: std::cout << "Lt" << std::endl; break;
+            case GeneralCategory::Lm: std::cout << "Lm" << std::endl; break;
+            case GeneralCategory::Mn: std::cout << "Mn" << std::endl; break;
+            case GeneralCategory::Me: std::cout << "Me" << std::endl; break;
+            case GeneralCategory::Mc: std::cout << "Mc" << std::endl; break;
+            case GeneralCategory::Nl: std::cout << "Nl" << std::endl; break;
+            case GeneralCategory::Zl: std::cout << "Zl" << std::endl; break;
+            case GeneralCategory::Zp: std::cout << "Zp" << std::endl; break;
+            case GeneralCategory::Cs: std::cout << "Cs" << std::endl; break;
+            case GeneralCategory::Co: std::cout << "Co" << std::endl; break;
+            case GeneralCategory::Unknown: std::cout << "Unknown" << std::endl; break;
+        }
+        std::cout << "Flags: " << std::flush;
+        if(unicode_data->White_Space) std::cout << "White_Space " << std::flush;
+        if(unicode_data->Soft_Dotted) std::cout << "Soft_Dotted " << std::flush;
+        if(unicode_data->Pattern_White_Space) std::cout << "Pattern_White_Space " << std::flush;
+        if(unicode_data->Pattern_Syntax) std::cout << "Pattern_Syntax " << std::flush;
+        if(unicode_data->Other_Uppercase) std::cout << "Other_Uppercase " << std::flush;
+        if(unicode_data->Other_Lowercase) std::cout << "Other_Lowercase " << std::flush;
+        if(unicode_data->ATerm) std::cout << "ATerm " << std::flush;
+        if(unicode_data->CR) std::cout << "CR " << std::flush;
+        if(unicode_data->Close) std::cout << "Close " << std::flush;
+        if(unicode_data->Extend) std::cout << "Extend " << std::flush;
+        if(unicode_data->Format) std::cout << "Format " << std::flush;
+        if(unicode_data->LF) std::cout << "LF " << std::flush;
+        if(unicode_data->Lower) std::cout << "Lower " << std::flush;
+        if(unicode_data->Numeric) std::cout << "Numeric " << std::flush;
+        if(unicode_data->OLetter) std::cout << "OLetter " << std::flush;
+        if(unicode_data->SContinue) std::cout << "SContinue " << std::flush;
+        if(unicode_data->STerm) std::cout << "STerm " << std::flush;
+        if(unicode_data->Sep) std::cout << "Sep " << std::flush;
+        if(unicode_data->Sp) std::cout << "Sp " << std::flush;
+        if(unicode_data->Upper) std::cout << "Upper " << std::flush;
+        if(unicode_data->ALetter) std::cout << "ALetter " << std::flush;
+        if(unicode_data->Double_Quote) std::cout << "Double_Quote " << std::flush;
+        if(unicode_data->ExtendNumLet) std::cout << "ExtendNumLet " << std::flush;
+        if(unicode_data->Hebrew_Letter) std::cout << "Hebrew_Letter " << std::flush;
+        if(unicode_data->Katakana) std::cout << "Katakana " << std::flush;
+        if(unicode_data->MidLetter) std::cout << "MidLetter " << std::flush;
+        if(unicode_data->MidNum) std::cout << "MidNum " << std::flush;
+        if(unicode_data->MidNumLet) std::cout << "MidNumLet " << std::flush;
+        if(unicode_data->Newline) std::cout << "Newline " << std::flush;
+        if(unicode_data->Regional_Indicator) std::cout << "Regional_Indicator " << std::flush;
+        if(unicode_data->Single_Quote) std::cout << "Single_Quote " << std::flush;
+        if(unicode_data->WSegSpace) std::cout << "WSegSpace " << std::flush;
+        if(unicode_data->ZWJ) std::cout << "ZWJ " << std::flush;
+        if(unicode_data->ParaSep) std::cout << "ParaSep " << std::flush;
+        if(unicode_data->SATerm) std::cout << "SATerm " << std::flush;
+        if(unicode_data->AHLetter) std::cout << "AHLetter " << std::flush;
+        if(unicode_data->MidNumLetQ) std::cout << "MidNumLetQ " << std::flush;
+        if(unicode_data->SB8_RHS1) std::cout << "SB8_RHS1 " << std::flush;
+        std::cout << std::endl;
     }
 }
 
