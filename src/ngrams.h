@@ -121,13 +121,6 @@ public:
 
 }
 
-template<>
-struct std::hash< txtlib::NGramView > : public unary_function< txtlib::NGramView, size_t > {
-    size_t operator()(const txtlib::NGramView& ngram) const noexcept {
-        return ngram.hash();
-    };
-};
-
 bool operator==(txtlib::NGramView __lhs, txtlib::NGramView __rhs) noexcept {
     if (__lhs.size() != __rhs.size()) return false;
 
@@ -136,5 +129,14 @@ bool operator==(txtlib::NGramView __lhs, txtlib::NGramView __rhs) noexcept {
             return false;
 
         return true;
+}
+
+namespace std {
+    template<>
+    struct hash< txtlib::NGramView > : public unary_function< txtlib::NGramView, size_t > {
+        size_t operator()(const txtlib::NGramView& ngram) const noexcept {
+            return ngram.hash();
+        };
+    };
 }
 #endif
