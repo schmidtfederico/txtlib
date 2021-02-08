@@ -7,8 +7,9 @@ Author: TBD
 Maintainer: TBD <tbd@me.com>
 Description: TBD
 License: GPL (>= 2)
+Depends: Matrix, R6
 Imports: Rcpp (>= 1.0.0), RcppParallel (>= 5.0.0)
-LinkingTo: Rcpp, RcppParallel, sparsepp, RcppArmadillo
+LinkingTo: BH, Rcpp, RcppParallel, sparsepp, RcppArmadillo
 Suggests: testthat
 RoxygenNote: 7.1.1
 Encoding: UTF-8

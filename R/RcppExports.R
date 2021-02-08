@@ -5,15 +5,41 @@
 #'
 #' @param text A text.
 #' @return An array of sentences.
-split_sentences <- function(texts) {
-    .Call(`_txtlib_split_sentences`, texts)
+#' @export
+split_sentences <- function(texts, locale = "") {
+    .Call('_txtlib_split_sentences', PACKAGE = 'txtlib', texts, locale)
 }
 
 #' Splits a text into one or more words.
 #'
 #' @param text A text.
 #' @return An array of words.
+#' @export
 split_words <- function(texts, word_mask = 2147483647L, non_word_mask = 0L, lowercase = FALSE) {
-    .Call(`_txtlib_split_words`, texts, word_mask, non_word_mask, lowercase)
+    .Call('_txtlib_split_words', PACKAGE = 'txtlib', texts, word_mask, non_word_mask, lowercase)
+}
+
+unicode_general_categories <- function() {
+    .Call('_txtlib_unicode_general_categories', PACKAGE = 'txtlib')
+}
+
+create_uax29_vectorizer_pointer <- function(vocabulary, ignored_terms, casing_transformation, case_sensitive_aliases, case_insensitive_aliases, ngrams_size, min_term_length, stemming_language, word_token_categories, non_word_token_categories, locale) {
+    .Call('_txtlib_create_uax29_vectorizer_pointer', PACKAGE = 'txtlib', vocabulary, ignored_terms, casing_transformation, case_sensitive_aliases, case_insensitive_aliases, ngrams_size, min_term_length, stemming_language, word_token_categories, non_word_token_categories, locale)
+}
+
+tokenize_impl <- function(vectorizer_handle, texts, parallel = FALSE) {
+    .Call('_txtlib_tokenize_impl', PACKAGE = 'txtlib', vectorizer_handle, texts, parallel)
+}
+
+sentence_tokenize_impl <- function(vectorizer_handle, texts, parallel = FALSE) {
+    .Call('_txtlib_sentence_tokenize_impl', PACKAGE = 'txtlib', vectorizer_handle, texts, parallel)
+}
+
+vectorize_impl <- function(vectorizer_handle, texts, parallel = FALSE, with_dimnames = TRUE) {
+    .Call('_txtlib_vectorize_impl', PACKAGE = 'txtlib', vectorizer_handle, texts, parallel, with_dimnames)
+}
+
+sentence_vectorize_impl <- function(vectorizer_handle, texts, parallel = FALSE, with_dimnames = TRUE) {
+    .Call('_txtlib_sentence_vectorize_impl', PACKAGE = 'txtlib', vectorizer_handle, texts, parallel, with_dimnames)
 }
 
