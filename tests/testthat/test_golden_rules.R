@@ -58,7 +58,9 @@ golden_rules_en <- lapply(golden_rules_en, function(x) data.frame(rule_name = x[
 golden_rules <- do.call(rbind, golden_rules_en)
 
 test_golden_rules <- function(split_function) {
-    splitted <- lapply(golden_rules$rule_text, split_function)
+    splitted <- lapply(golden_rules$rule_text, function(x) {
+        sapply(split_function(x)[[1]], paste, collapse = '')
+    })
 
     sapply(1:nrow(golden_rules), function(rule_index) {
         expected <- unlist(golden_rules[rule_index, ]$expected_result)
@@ -74,8 +76,10 @@ test_that("UAX #29 passes the Golden Rules (EN) that it should pass", {
     expected_result <- rep(TRUE, nrow(golden_rules))
     expected_result[uax_29_expected_failures] <- FALSE
 
+    tokenizer <- UAX29SentenceTokenizer()
+
     testthat::expect_equal(
-        test_golden_rules(txtlib::split_sentences),
+        test_golden_rules(tokenizer$transform),
         expected_result
     )
 })

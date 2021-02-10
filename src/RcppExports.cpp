@@ -6,32 +6,6 @@
 
 using namespace Rcpp;
 
-// split_sentences
-std::vector<std::vector<std::wstring>> split_sentences(const Rcpp::StringVector& texts, const std::string& locale);
-RcppExport SEXP _txtlib_split_sentences(SEXP textsSEXP, SEXP localeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type texts(textsSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type locale(localeSEXP);
-    rcpp_result_gen = Rcpp::wrap(split_sentences(texts, locale));
-    return rcpp_result_gen;
-END_RCPP
-}
-// split_words
-std::vector<std::vector<std::wstring>> split_words(const Rcpp::StringVector& texts, const unsigned long word_mask, const unsigned long non_word_mask, const bool lowercase);
-RcppExport SEXP _txtlib_split_words(SEXP textsSEXP, SEXP word_maskSEXP, SEXP non_word_maskSEXP, SEXP lowercaseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::StringVector& >::type texts(textsSEXP);
-    Rcpp::traits::input_parameter< const unsigned long >::type word_mask(word_maskSEXP);
-    Rcpp::traits::input_parameter< const unsigned long >::type non_word_mask(non_word_maskSEXP);
-    Rcpp::traits::input_parameter< const bool >::type lowercase(lowercaseSEXP);
-    rcpp_result_gen = Rcpp::wrap(split_words(texts, word_mask, non_word_mask, lowercase));
-    return rcpp_result_gen;
-END_RCPP
-}
 // unicode_general_categories
 const std::vector< std::string > unicode_general_categories();
 RcppExport SEXP _txtlib_unicode_general_categories() {
@@ -119,8 +93,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_txtlib_split_sentences", (DL_FUNC) &_txtlib_split_sentences, 2},
-    {"_txtlib_split_words", (DL_FUNC) &_txtlib_split_words, 4},
     {"_txtlib_unicode_general_categories", (DL_FUNC) &_txtlib_unicode_general_categories, 0},
     {"_txtlib_create_uax29_vectorizer_pointer", (DL_FUNC) &_txtlib_create_uax29_vectorizer_pointer, 11},
     {"_txtlib_tokenize_impl", (DL_FUNC) &_txtlib_tokenize_impl, 3},
