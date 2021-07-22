@@ -78,6 +78,11 @@ test_that("UAX #29 passes the Golden Rules (EN) that it should pass", {
 
     tokenizer <- UAX29SentenceTokenizer()
 
+    failed_tests <- which(test_golden_rules(tokenizer$transform) != expected_result)
+    if(length(failed_tests) > 0) {
+        print(tokenizer$transform(golden_rules_en[[which(test_golden_rules(tokenizer$transform) != expected_result)]]$rule_text))
+    }
+
     testthat::expect_equal(
         test_golden_rules(tokenizer$transform),
         expected_result
