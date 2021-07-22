@@ -1,6 +1,8 @@
 context("Test splitting words")
 
 test_that("Multiple white spaces are kept together", {
+    # Only after ICU 62, which bumped Unicode version to 11, whitespaces are together.
+    testthat::skip_if(txtlib:::icu_info()$VERSION_MAJOR < 62)
     tokenizer <- UAX29Tokenizer()
     testthat::expect_equal(tokenizer$transform('a  b')[[1]], c('a', '  ', 'b'))
     testthat::expect_equal(tokenizer$transform('a \t b')[[1]], c('a', ' ', '\t', ' ', 'b'))
