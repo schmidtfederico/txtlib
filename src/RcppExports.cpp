@@ -6,6 +6,16 @@
 
 using namespace Rcpp;
 
+// icu_info
+Rcpp::List icu_info();
+RcppExport SEXP _txtlib_icu_info() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(icu_info());
+    return rcpp_result_gen;
+END_RCPP
+}
 // unicode_general_categories
 const std::vector< std::string > unicode_general_categories();
 RcppExport SEXP _txtlib_unicode_general_categories() {
@@ -93,6 +103,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_txtlib_icu_info", (DL_FUNC) &_txtlib_icu_info, 0},
     {"_txtlib_unicode_general_categories", (DL_FUNC) &_txtlib_unicode_general_categories, 0},
     {"_txtlib_create_uax29_vectorizer_pointer", (DL_FUNC) &_txtlib_create_uax29_vectorizer_pointer, 11},
     {"_txtlib_tokenize_impl", (DL_FUNC) &_txtlib_tokenize_impl, 3},

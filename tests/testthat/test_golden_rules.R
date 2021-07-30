@@ -73,6 +73,10 @@ test_golden_rules <- function(split_function) {
 test_that("UAX #29 passes the Golden Rules (EN) that it should pass", {
     uax_29_expected_failures <- c(4, 5, 10, 11, 16, 18, 31:33, 35:41, 43:45, 47, 50, 51)
 
+    if(txtlib:::icu_info()$VERSION_MAJOR < 62) {
+        uax_29_expected_failures <- c(uax_29_expected_failures, 22)
+    }
+
     expected_result <- rep(TRUE, nrow(golden_rules))
     expected_result[uax_29_expected_failures] <- FALSE
 
